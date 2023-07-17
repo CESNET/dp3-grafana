@@ -1,7 +1,7 @@
 {
-  "name": "dp3",
+  "name": "dp3-grafana",
   "version": "1.0.0",
-  "description": "Dp3 datasource plugin for grafana",
+  "description": "DP3 datasource plugin for Grafana",
   "scripts": {
     "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",
     "dev": "webpack -w -c ./.config/webpack/webpack.config.ts --env development",
@@ -15,8 +15,8 @@
     "server": "docker-compose up --build",
     "sign": "npx --yes @grafana/sign-plugin@latest"
   },
-  "author": "Cesnet",
-  "license": "Apache-2.0",
+  "author": "CESNET",
+  "license": "UNLICENSED",
   "devDependencies": {
     "@babel/core": "^7.21.4",
     "@grafana/e2e": "9.5.3",
