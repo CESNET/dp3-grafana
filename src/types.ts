@@ -1,7 +1,7 @@
 import { DataQuery, DataSourceJsonData } from '@grafana/data';
 
 export interface MyQuery extends DataQuery {
-  onlyMasterRecords: boolean;
+  currentValues: boolean;
   entity?: string;
   eid?: string;
   attr?: string;

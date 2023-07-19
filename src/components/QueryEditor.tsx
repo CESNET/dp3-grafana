@@ -8,7 +8,7 @@ import { MyDataSourceOptions, MyQuery } from '../types';
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>;
 
 export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props) {
-  const { onlyMasterRecords, entity, eid, attr } = query;
+  const { currentValues, entity, eid, attr } = query;
 
   const [entitySpec, setEntitySpec] = useState<any>({});
   const [entities, setEntities] = useState<Array<SelectableValue<string>>>([]);
@@ -48,8 +48,8 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props) 
   }, [entitySpec, entity]);
 
   // On change hooks
-  const onOnlyMasterRecordChange = (event: ChangeEvent<HTMLInputElement>) => {
-    onChange({ ...query, onlyMasterRecords: event.target.checked });
+  const onCurrentValuesChange = (event: ChangeEvent<HTMLInputElement>) => {
+    onChange({ ...query, currentValues: event.target.checked });
     onRunQuery();
   };
 
@@ -73,11 +73,12 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props) 
   return (
     <div className="gf-form">
       <InlineField
-        label="Only master record"
-        tooltip="If checked, show only master record data (current values).
-          If unchecked, shows historic data. This is handy for tabular overviews."
+        label="Current values"
+        tooltip="If checked, show only master record data or latest snapshot
+          (depends on other fields). If unchecked, shows historic data.
+          This is handy for tabular overviews."
       >
-        <Checkbox value={onlyMasterRecords} onChange={onOnlyMasterRecordChange} />
+        <Checkbox value={currentValues} onChange={onCurrentValuesChange} />
       </InlineField>
       <InlineField label="Entity" required>
         <Select
