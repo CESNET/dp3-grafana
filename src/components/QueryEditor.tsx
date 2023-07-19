@@ -35,17 +35,22 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props) 
   useEffect(() => {
     const attrs = entitySpec[entity || '']?.attribs || {};
 
-    setAttributes(Object.keys(attrs).map(key => {
+    const newAttributes = Object.keys(attrs).map(key => {
       return {
         value: key,
         label: `${attrs[key].name} (${key})`,
         description: attrs[key].description
       }
-    }));
+    });
 
-    // Reset attribute <select>
-    setAttrState(null);
-  }, [entitySpec, entity]);
+    setAttributes(newAttributes);
+
+    // Reset attribute <select> if not present in new attributes list
+    if (newAttributes.length > 0 &&
+        !newAttributes.some(a => a.value === attrState)) {
+      setAttrState(null);
+    }
+  }, [entitySpec, entity]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   // On change hooks
   const onCurrentValuesChange = (event: ChangeEvent<HTMLInputElement>) => {
