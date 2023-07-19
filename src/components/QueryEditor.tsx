@@ -76,7 +76,7 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props) 
   };
 
   return (
-    <div className="gf-form">
+    <div className="gf-form gf-form-inline">
       <InlineField
         label="Current values"
         tooltip="If checked, show only master record data or latest snapshot
