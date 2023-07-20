@@ -2,7 +2,7 @@ import React, { ChangeEvent, useEffect, useState } from 'react';
 import { Checkbox, InlineField, Input, Select } from '@grafana/ui';
 import { QueryEditorProps, SelectableValue } from '@grafana/data';
 
-import { DataSource } from '../datasource';
+import { AttrType, DataSource } from '../datasource';
 import { MyDataSourceOptions, MyQuery } from '../types';
 
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>;
@@ -35,7 +35,15 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props) 
   useEffect(() => {
     const attrs = entitySpec[entity || '']?.attribs || {};
 
-    const newAttributes = Object.keys(attrs).map(key => {
+    const newAttributes = Object.keys(attrs).filter(key => {
+      if (currentValues) {
+        // Only plain and observations have current value
+        return attrs[key].t === AttrType.PLAIN || attrs[key].t === AttrType.OBSERVATION;
+      } else {
+        // Only observations and timeseries have history
+        return attrs[key].t === AttrType.OBSERVATION || attrs[key].t === AttrType.TIMESERIES;
+      }
+    }).map(key => {
       return {
         value: key,
         label: `${attrs[key].name} (${key})`,
@@ -50,7 +58,7 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props) 
         !newAttributes.some(a => a.value === attrState)) {
       setAttrState(null);
     }
-  }, [entitySpec, entity]);  // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentValues, entitySpec, entity]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   // On change hooks
   const onCurrentValuesChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -64,14 +72,14 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props) 
     onRunQuery();
   };
 
-  const onEidChange = (event: ChangeEvent<HTMLInputElement>) => {
-    onChange({ ...query, eid: event.target.value });
-    onRunQuery();
-  };
-
   const onAttrChange = (value: SelectableValue<string>) => {
     setAttrState(value.value || null);
     onChange({ ...query, attr: value.value });
+    onRunQuery();
+  };
+
+  const onEidChange = (event: ChangeEvent<HTMLInputElement>) => {
+    onChange({ ...query, eid: event.target.value });
     onRunQuery();
   };
 
@@ -80,8 +88,9 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props) 
       <InlineField
         label="Current values"
         tooltip="If checked, show only master record data or latest snapshot
-          (depends on other fields). If unchecked, shows historic data.
-          This is handy for tabular overviews."
+          (depends on other fields) - thus only plain and observation types
+          are allowed. If unchecked, shows historic data - only observations
+          and timeseries are allowed. This is handy for tabular overviews."
       >
         <Checkbox value={currentValues} onChange={onCurrentValuesChange} />
       </InlineField>
@@ -94,10 +103,7 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props) 
           disabled={entities.length === 0}
         />
       </InlineField>
-      <InlineField label="Entity ID">
-        <Input onChange={onEidChange} value={eid || ''} />
-      </InlineField>
-      <InlineField label="Attribute">
+      <InlineField label="Attribute" required>
         <Select
           options={attributes}
           value={attrState}
@@ -105,6 +111,9 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props) 
           isLoading={entities.length === 0}
           disabled={attributes.length === 0}
         />
+      </InlineField>
+      <InlineField label="Entity ID">
+        <Input onChange={onEidChange} value={eid || ''} />
       </InlineField>
     </div>
   );

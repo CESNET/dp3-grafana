@@ -14,11 +14,11 @@ import { MyQuery, MyDataSourceOptions } from './types';
 /**
  * DP3 AttrType enum
  */
-// enum AttrType {
-//   Plain = 1,
-//   Observation = 2,
-//   Timeseries = 3,
-// }
+export enum AttrType {
+  PLAIN = 1,
+  OBSERVATION = 2,
+  TIMESERIES = 4,
+}
 
 export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   // DP3's API URL
@@ -69,48 +69,98 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   }
 
   /**
-   * Converts attribute data type to Grafana's `FieldType`
-   * @param  attrSpec Attribute specification
+   * Converts DP3's `DataType` to Grafana's `FieldType`
+   * @param  dataType Data type
    * @return          Grafana field type
    */
-  private getFieldTypeFromAttrSpec(attrSpec: Record<string, any>): FieldType {
-    // TODO
-    return FieldType.string;
-  }
-
-  /**
-   * Prepares single query field (columns) for given query
-   * @param  frame    Frame to mutate
-   * @param  query    Query
-   * @param  attrSpec Spec of given attribute
-   */
-  private addQueryFieldToFrame(frame: MutableDataFrame, query: MyQuery, attrSpec: Record<string, any>) {
-    frame.addField({
-      name: attrSpec.id,
-      type: this.getFieldTypeFromAttrSpec(attrSpec),
-      config: {
-        displayNameFromDS: attrSpec.name,
-        description: attrSpec.description,
-      }
-    });
-  }
-
-  /**
-   * Prepares query fields (columns) for given query
-   * @param  frame          Frame to mutate
-   * @param  query          Query
-   * @param  attributesSpec Attributes spec of entity
-   */
-  private addQueryFieldsToFrame(frame: MutableDataFrame, query: MyQuery, attributesSpec: Record<string, any>) {
-    // Add single attribute
-    if (query.attr && attributesSpec[query.attr]) {
-      this.addQueryFieldToFrame(frame, query, attributesSpec[query.attr]);
-      return;
+  private getFIeldTypeFromDataType(dataType: string): FieldType {
+    switch (dataType) {
+    case 'tag': return FieldType.boolean;
+    case 'binary': return FieldType.boolean;
+    case 'string': return FieldType.string;
+    case 'int': return FieldType.number;
+    case 'int64': return FieldType.number;
+    case 'float': return FieldType.number;
+    case 'ipv4': return FieldType.string;
+    case 'ipv6': return FieldType.string;
+    case 'mac': return FieldType.string;
+    case 'time': return FieldType.time;
+    case 'special': return FieldType.other;
+    case 'json': return FieldType.string;
     }
 
-    // Add all attributes
-    for (const attr in attributesSpec) {
-      this.addQueryFieldToFrame(frame, query, attributesSpec[attr]);
+    const firstPart = dataType.split('<')[0];
+
+    switch (firstPart) {
+    case 'link': return FieldType.string;
+    case 'array': return FieldType.other;
+    case 'set': return FieldType.other;
+    case 'dict': return FieldType.other;
+    case 'category': return FieldType.string;
+    default: return FieldType.other;
+    }
+  }
+
+  /**
+   * Prepares single query field (column) for given query and attribute type
+   * @param  frame    Frame to mutate
+   * @param  query    Query
+   * @param  attrSpec Attribute spec
+   */
+  private addQueryFieldToFrameByAttrType(frame: MutableDataFrame, query: MyQuery, attrSpec: Record<string, any>) {
+    switch (attrSpec.t) {
+    case AttrType.PLAIN:
+      frame.addField({
+        name: attrSpec.id,
+        type: this.getFIeldTypeFromDataType(attrSpec.data_type),
+        config: {
+          displayNameFromDS: attrSpec.name,
+          description: attrSpec.description,
+        }
+      });
+      break;
+    case AttrType.OBSERVATION:
+      frame.addField({
+        name: attrSpec.id,
+        type: attrSpec.multi_value
+          ? FieldType.other
+          : this.getFIeldTypeFromDataType(attrSpec.data_type),
+        config: {
+          displayNameFromDS: attrSpec.name,
+          description: attrSpec.description,
+        }
+      });
+
+      if (attrSpec.confidence) {
+        frame.addField({
+          name: `${attrSpec.id}#c`,
+          type: attrSpec.multi_value ? FieldType.other : FieldType.number,
+          config: attrSpec.multi_value
+            ? {
+              displayNameFromDS: `${attrSpec.name} - confidence`,
+            }
+            : {
+              displayNameFromDS: `${attrSpec.name} - confidence`,
+              unit: 'percentunit',
+              min: 0,
+              max: 1
+            }
+        });
+      }
+      break;
+    case AttrType.TIMESERIES:
+      for (const s in attrSpec.series) {
+        frame.addField({
+          name: `${attrSpec.id}/${s}`,
+          type: this.getFIeldTypeFromDataType(attrSpec.series[s].data_type),
+          config: {
+            displayNameFromDS: `${attrSpec.name}/${s}`,
+          }
+        });
+      }
+      break;
+    default:
+      console.warn(`DP3: Unknown attribute type: ${attrSpec.t}`);
     }
   }
 
@@ -125,25 +175,46 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   private async processCurrentValuesQuery(from: number, to: number, query: MyQuery, entitySpec: Record<string, any>): Promise<MutableDataFrame[]> {
     const frame = new MutableDataFrame({
       refId: query.refId,
-      fields: [
-        {
-          name: 'eid',
-          type: FieldType.string,
-          config: { displayNameFromDS: 'EID' }
-        }
-      ]
+      fields: []
     });
 
+    // Add eid field if eid is not directly set
+    if (!query.eid) {
+      frame.addField({
+        name: 'eid',
+        type: FieldType.string,
+        config: { displayNameFromDS: 'EID' }
+      });
+    }
+
+    const attr = query.attr || '';
+
     // Populate fields
-    this.addQueryFieldsToFrame(frame, query, entitySpec.attribs);
+    this.addQueryFieldToFrameByAttrType(frame, query, entitySpec.attribs[attr]);
 
-    const { data } = await this.doDatasourceRequest(
-      `/entity/${query.entity}`,
-      { limit: 9999 },
-    );
+    if (query.eid) {
+      // Get data for given eid
+      const { data } = await this.doDatasourceRequest(
+        `/entity/${query.entity}/${query.eid}/get/${attr}`,
+        { date_from: to, date_to: to },
+      );
 
-    for (const d of data.data) {
-      frame.add(d);
+      const currentValueObj: Record<string, any> = {};
+      currentValueObj[attr] = data.current_value;
+
+      if (data.current_value) {
+        frame.add(currentValueObj);
+      }
+    } else {
+      // Get data for all eids
+      const { data } = await this.doDatasourceRequest(
+        `/entity/${query.entity}`,
+        { limit: 9999 },
+      );
+
+      for (const d of data.data) {
+        frame.add(d);
+      }
     }
 
     return [frame];
@@ -162,29 +233,48 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       refId: query.refId,
       fields: [
         {
-          name: '_time_created',
+          name: 't',
           type: FieldType.time,
           config: { displayNameFromDS: 'Time' }
         }
       ]
     });
 
-    // Populate fields
-    this.addQueryFieldsToFrame(frame, query, entitySpec.attribs);
+    const attr = query.attr || '';
+    const eid = query.eid || '';
+    const attrSpec = entitySpec.attribs[attr];
 
-    // Eid and attribute must be populated
+    // Populate fields
+    this.addQueryFieldToFrameByAttrType(frame, query, attrSpec);
+
+    // Eid must be populated
     // TODO: allow multiple EIDs
-    if (!query.eid || !query.attr) {
+    if (!eid) {
       return [];
     }
 
     const { data } = await this.doDatasourceRequest(
-      `/entity/${query.entity}/${query.eid}`,
+      `/entity/${query.entity}/${eid}/get/${attr}`,
       { date_from: from, date_to: to }
     );
 
-    for (const snapshot of data.snapshots) {
-      frame.add(snapshot);
+    for (const d of data.history) {
+      const dExp: Record<string, any> = {
+        t: Date.parse(d.t2 + '.000Z'),
+      };
+
+      if (attrSpec.t === AttrType.TIMESERIES) {
+        // Extract series
+        for (const series in d.v) {
+          dExp[`${attr}/${series}`] = d.v[series];
+        }
+      } else {
+        // Use value directly
+        dExp[attr] = d.v;
+        dExp[`${attr}#c`] = d.c;
+      }
+
+      frame.add(dExp);
     }
 
     return [frame];
@@ -203,6 +293,11 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
     // Entity must be present and valid
     if (!query.entity || !entitySpec) {
+      return [];
+    }
+
+    // Attribute must be present and valid
+    if (!query.attr || !entitySpec.attribs[query.attr]) {
       return [];
     }
 
