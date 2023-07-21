@@ -6,8 +6,9 @@ import {
   DataSourceInstanceSettings,
   MutableDataFrame,
   FieldType,
+  ScopedVars,
 } from '@grafana/data';
-import { getBackendSrv } from '@grafana/runtime';
+import { getBackendSrv, getTemplateSrv } from '@grafana/runtime';
 
 import { MyQuery, MyDataSourceOptions } from './types';
 
@@ -309,6 +310,24 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   }
 
   /**
+   * Interpolates variables in given query
+   * @param  query Query
+   * @param  vars  User's variables
+   * @return       Query for further processing
+   */
+  private replaceInterpolateVariablesInQuery(query: MyQuery, vars: ScopedVars): MyQuery {
+    const templateSrv = getTemplateSrv();
+
+    const interpolated = {
+      entity: templateSrv.replace(query.entity, vars),
+      attr: templateSrv.replace(query.attr, vars),
+      eid: templateSrv.replace(query.eid, vars),
+    };
+
+    return { ...query, ...interpolated };
+  }
+
+  /**
    * Queries DP3's API for data
    * @param  options Query options
    * @return         Data
@@ -323,7 +342,12 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
     // Return a constant for each query.
     const dataPromises = options.targets.map(
-      target => this.processSingleQuery(from, to, target, entitiesSpec)
+      target => this.processSingleQuery(
+        from,
+        to,
+        this.replaceInterpolateVariablesInQuery(target, options.scopedVars),
+        entitiesSpec
+      )
     );
 
     // Concatenate all arrays when all data is ready
