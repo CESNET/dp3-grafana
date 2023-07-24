@@ -1,10 +1,10 @@
-# Grafana data source plugin template
+# Grafana app plugin template
 
-This template is a starting point for building a Data Source Plugin for Grafana.
+This template is a starting point for building an app plugin for Grafana.
 
-## What are Grafana data source plugins?
+## What are Grafana app plugins?
 
-Grafana supports a wide range of data sources, including Prometheus, MySQL, and even Datadog. There’s a good chance you can already visualize metrics from the systems you have set up. In some cases, though, you already have an in-house metrics solution that you’d like to add to your Grafana dashboards. Grafana Data Source Plugins enables integrating such solutions with Grafana.
+App plugins can let you create a custom out-of-the-box monitoring experience by custom pages, nested datasources and panel plugins.
 
 ## Getting started
 
@@ -110,6 +110,6 @@ To trigger the workflow we need to push a version tag to github. This can be ach
 
 Below you can find source code for existing app plugins and other related documentation.
 
-- [Basic data source plugin example](https://github.com/grafana/grafana-plugin-examples/tree/master/examples/datasource-basic#readme)
+- [Basic app plugin example](https://github.com/grafana/grafana-plugin-examples/tree/master/examples/app-basic#readme)
 - [Plugin.json documentation](https://grafana.com/docs/grafana/latest/developers/plugins/metadata/)
 - [How to sign a plugin?](https://grafana.com/docs/grafana/latest/developers/plugins/sign-a-plugin/)

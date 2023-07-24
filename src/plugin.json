@@ -1,17 +1,15 @@
 {
   "$schema": "https://raw.githubusercontent.com/grafana/grafana/master/docs/sources/developers/plugins/plugin.schema.json",
-  "type": "datasource",
+  "type": "app",
   "name": "DP3",
-  "id": "cesnet-dp3-datasource",
-  "metrics": true,
-  "category": "other",
+  "id": "cesnet-dp3-app",
   "info": {
-    "description": "DP3 datasource plugin for Grafana",
+    "keywords": ["cesnet", "dp3", "app", "datasource", "panel"],
+    "description": "CESNET DP3 plugin for Grafana",
     "author": {
       "name": "CESNET",
       "url": "https://www.cesnet.cz"
     },
-    "keywords": ["cesnet", "dp3", "datasource"],
     "logos": {
       "small": "img/logo.svg",
       "large": "img/logo.svg"
@@ -23,6 +21,48 @@
     "version": "%VERSION%",
     "updated": "%TODAY%"
   },
+  "includes": [
+    {
+      "type": "page",
+      "name": "Page One",
+      "path": "/a/%PLUGIN_ID%/one",
+      "role": "Admin",
+      "addToNav": true,
+      "defaultNav": true
+    },
+    {
+      "type": "page",
+      "name": "Page Two",
+      "path": "/a/%PLUGIN_ID%/two",
+      "role": "Admin",
+      "addToNav": true,
+      "defaultNav": false
+    },
+    {
+      "type": "page",
+      "name": "Page Three",
+      "path": "/a/%PLUGIN_ID%/three",
+      "role": "Admin",
+      "addToNav": true,
+      "defaultNav": false
+    },
+    {
+      "type": "page",
+      "name": "Page Four",
+      "path": "/a/%PLUGIN_ID%/four",
+      "role": "Admin",
+      "addToNav": true,
+      "defaultNav": false
+    },
+    {
+      "type": "page",
+      "icon": "cog",
+      "name": "Configuration",
+      "path": "/plugins/%PLUGIN_ID%",
+      "role": "Admin",
+      "addToNav": true
+    }
+  ],
   "dependencies": {
     "grafanaDependency": ">=9.5.3",
     "plugins": []

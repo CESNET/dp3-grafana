@@ -3,7 +3,7 @@
 Remove any remaining comments before publishing as these may be displayed on Grafana.com -->
 # DP3
 
-CESNET DP3 plugin for Grafana
+DP3 datasource plugin for Grafana.
 
 <!-- To help maximize the impact of your README and improve usability for users, we propose the following loose structure:
 

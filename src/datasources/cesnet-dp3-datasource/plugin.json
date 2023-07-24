@@ -1,0 +1,30 @@
+{
+  "$schema": "https://raw.githubusercontent.com/grafana/grafana/master/docs/sources/developers/plugins/plugin.schema.json",
+  "type": "datasource",
+  "name": "DP3",
+  "id": "cesnet-dp3-datasource",
+  "metrics": true,
+  "category": "other",
+  "info": {
+    "description": "DP3 datasource plugin for Grafana",
+    "author": {
+      "name": "CESNET",
+      "url": "https://www.cesnet.cz"
+    },
+    "keywords": ["cesnet", "dp3", "datasource"],
+    "logos": {
+      "small": "img/logo.svg",
+      "large": "img/logo.svg"
+    },
+    "links": [
+      {"name": "DP3's GitHub", "url": "https://github.com/CESNET/dp3/"}
+    ],
+    "screenshots": [],
+    "version": "%VERSION%",
+    "updated": "%TODAY%"
+  },
+  "dependencies": {
+    "grafanaDependency": ">=9.5.3",
+    "plugins": []
+  }
+}

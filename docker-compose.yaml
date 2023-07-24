@@ -2,7 +2,7 @@ version: '3.0'
 
 services:
   grafana:
-    container_name: 'cesnet-dp3-datasource'
+    container_name: 'cesnet-dp3-app'
     build:
       context: ./.config
       args:
@@ -11,5 +11,5 @@ services:
     ports:
       - 3000:3000/tcp
     volumes:
-      - ./dist:/var/lib/grafana/plugins/cesnet-dp3-datasource
+      - ./dist:/var/lib/grafana/plugins/cesnet-dp3-app
       - ./provisioning:/etc/grafana/provisioning

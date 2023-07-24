@@ -1,7 +1,7 @@
 {
   "name": "dp3-grafana",
   "version": "1.0.0",
-  "description": "DP3 datasource plugin for Grafana",
+  "description": "CESNET DP3 plugin for Grafana",
   "scripts": {
     "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",
     "dev": "webpack -w -c ./.config/webpack/webpack.config.ts --env development",
@@ -16,7 +16,7 @@
     "sign": "npx --yes @grafana/sign-plugin@latest"
   },
   "author": "CESNET",
-  "license": "UNLICENSED",
+  "license": "BSD-3-Clause",
   "devDependencies": {
     "@babel/core": "^7.21.4",
     "@grafana/e2e": "9.5.3",
@@ -31,6 +31,7 @@
     "@types/jest": "^29.5.0",
     "@types/lodash": "^4.14.194",
     "@types/node": "^18.15.11",
+    "@types/react-router-dom": "^5.3.3",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.3",
     "eslint-webpack-plugin": "^4.0.1",
@@ -62,6 +63,8 @@
     "@grafana/ui": "9.5.3",
     "react": "17.0.2",
     "react-dom": "17.0.2",
+    "react-router-dom": "^5.2.0",
+    "rxjs": "7.8.0",
     "tslib": "2.5.3"
   },
   "packageManager": "npm@9.8.0"

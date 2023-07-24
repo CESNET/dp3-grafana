@@ -1,9 +1,10 @@
-import { DataSourcePlugin } from '@grafana/data';
-import { DataSource } from './datasource';
-import { ConfigEditor } from './components/ConfigEditor';
-import { QueryEditor } from './components/QueryEditor';
-import { MyQuery, MyDataSourceOptions } from './types';
+import { AppPlugin } from '@grafana/data';
+import { App } from './components/App';
+import { AppConfig } from './components/AppConfig';
 
-export const plugin = new DataSourcePlugin<DataSource, MyQuery, MyDataSourceOptions>(DataSource)
-  .setConfigEditor(ConfigEditor)
-  .setQueryEditor(QueryEditor);
+export const plugin = new AppPlugin<{}>().setRootPage(App).addConfigPage({
+  title: 'Configuration',
+  icon: 'cog',
+  body: AppConfig,
+  id: 'configuration',
+});
