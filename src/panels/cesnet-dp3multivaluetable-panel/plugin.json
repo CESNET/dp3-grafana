@@ -1,0 +1,26 @@
+{
+  "$schema": "https://raw.githubusercontent.com/grafana/grafana/master/docs/sources/developers/plugins/plugin.schema.json",
+  "type": "panel",
+  "name": "DP3 multivalue table",
+  "id": "cesnet-dp3multivaluetable-panel",
+  "info": {
+    "keywords": ["cesnet", "dp3", "panel"],
+    "description": "Table for multi value attributes data",
+    "author": {
+      "name": "CESNET",
+      "url": "https://www.cesnet.cz"
+    },
+    "logos": {
+      "small": "img/logo.svg",
+      "large": "img/logo.svg"
+    },
+    "links": [],
+    "screenshots": [],
+    "version": "%VERSION%",
+    "updated": "%TODAY%"
+  },
+  "dependencies": {
+    "grafanaDependency": ">=9.5.3",
+    "plugins": []
+  }
+}
