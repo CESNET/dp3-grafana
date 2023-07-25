@@ -261,7 +261,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
     for (const d of data.history) {
       const dExp: Record<string, any> = {
-        t: Date.parse(d.t2 + '.000Z'),
+        t: Date.parse(d.t2 + 'Z'),
       };
 
       if (attrSpec.t === AttrType.TIMESERIES) {

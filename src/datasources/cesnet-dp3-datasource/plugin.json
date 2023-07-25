@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/grafana/grafana/master/docs/sources/developers/plugins/plugin.schema.json",
   "type": "datasource",
-  "name": "DP3",
+  "name": "DP3 datasource",
   "id": "cesnet-dp3-datasource",
   "metrics": true,
   "category": "other",
