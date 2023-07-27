@@ -2,6 +2,7 @@ import React from 'react';
 import { PanelProps } from '@grafana/data';
 import { TimeSeries, TooltipPlugin, TooltipDisplayMode, ZoomPlugin } from '@grafana/ui';
 import { LegendDisplayMode, VizLegendOptions } from '@grafana/schema';
+
 import { SimpleOptions } from '../types';
 
 interface Props extends PanelProps<SimpleOptions> {}
@@ -16,6 +17,7 @@ export function MultiValueTimelinePanel({
   onChangeTimeRange,
   replaceVariables,
 }: Props) {
+  // Hide legend
   const legendConfig: VizLegendOptions = {
     calcs: [],
     displayMode: LegendDisplayMode.Hidden,
