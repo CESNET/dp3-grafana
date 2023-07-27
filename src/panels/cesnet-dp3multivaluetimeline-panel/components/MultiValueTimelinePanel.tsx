@@ -1,8 +1,8 @@
 import React from 'react';
 import { PanelProps } from '@grafana/data';
 import { TimeSeries, TooltipPlugin, TooltipDisplayMode, ZoomPlugin } from '@grafana/ui';
+import { LegendDisplayMode, VizLegendOptions } from '@grafana/schema';
 import { SimpleOptions } from '../types';
-import { testIds } from './testIds';
 
 interface Props extends PanelProps<SimpleOptions> {}
 
@@ -16,21 +16,22 @@ export function MultiValueTimelinePanel({
   onChangeTimeRange,
   replaceVariables,
 }: Props) {
-  console.log('Panel rendered. ✔️');
+  const legendConfig: VizLegendOptions = {
+    calcs: [],
+    displayMode: LegendDisplayMode.Hidden,
+    placement: 'bottom',
+    showLegend: false
+  };
 
   return (
-    <div data-testid={testIds.panel.container}>
-      <div>
-        <strong>Variable: </strong>
-        {replaceVariables('"$myVariable"')}
-      </div>
+    <div>
       <TimeSeries
         width={width}
         height={height}
         timeRange={timeRange}
         timeZone={timeZone}
         frames={data.series}
-        legend={options.legend}
+        legend={legendConfig}
       >
         {(config, alignedDataFrame) => {
           return (

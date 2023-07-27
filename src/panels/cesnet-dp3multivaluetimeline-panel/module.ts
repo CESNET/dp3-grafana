@@ -1,5 +1,5 @@
 import { PanelPlugin, FieldColorModeId } from '@grafana/data';
-import { LegendDisplayMode, GraphGradientMode } from '@grafana/schema';
+import { GraphGradientMode } from '@grafana/schema';
 import { SimpleOptions } from './types';
 import { MultiValueTimelinePanel } from './components';
 import { ariaLabels } from './components/ariaLabels';
@@ -58,56 +58,5 @@ export const plugin = new PanelPlugin<SimpleOptions>(MultiValueTimelinePanel)
             ariaLabelForHandle: ariaLabels.fillOpacity,
           },
         });
-    },
-  })
-  .setPanelOptions((builder) => {
-    return builder
-      .addRadio({
-        path: 'legend.displayMode',
-        name: 'Legend mode',
-        category: ['Legend'],
-        description: '',
-        defaultValue: LegendDisplayMode.List,
-        settings: {
-          options: [
-            {
-              value: LegendDisplayMode.List,
-              label: 'List',
-              ariaLabel: ariaLabels.legendDisplayList,
-            },
-            {
-              value: LegendDisplayMode.Table,
-              label: 'Table',
-              ariaLabel: ariaLabels.legendDisplayTable,
-            },
-            {
-              value: undefined,
-              label: 'Hidden',
-              ariaLabel: ariaLabels.legendDisplayHidden,
-            },
-          ],
-        },
-      })
-      .addRadio({
-        path: 'legend.placement',
-        name: 'Legend placement',
-        category: ['Legend'],
-        description: '',
-        defaultValue: 'bottom',
-        settings: {
-          options: [
-            {
-              value: 'bottom',
-              label: 'Bottom',
-              ariaLabel: ariaLabels.legendPlacementBottom,
-            },
-            {
-              value: 'right',
-              label: 'Right',
-              ariaLabel: ariaLabels.legendPlacementRight,
-            },
-          ],
-        },
-        showIf: (config) => !!config.legend.displayMode,
-      });
+    }
   });
