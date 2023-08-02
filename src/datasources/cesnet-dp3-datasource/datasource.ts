@@ -234,9 +234,14 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       refId: query.refId,
       fields: [
         {
-          name: 't',
+          name: 't1',
           type: FieldType.time,
-          config: { displayNameFromDS: 'Time' }
+          config: { displayNameFromDS: 'Time (start)' }
+        },
+        {
+          name: 't2',
+          type: FieldType.time,
+          config: { displayNameFromDS: 'Time (end)' }
         }
       ]
     });
@@ -261,7 +266,8 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
     for (const d of data.history) {
       const dExp: Record<string, any> = {
-        t: Date.parse(d.t2 + 'Z'),
+        t1: Date.parse(d.t1 + 'Z'),
+        t2: Date.parse(d.t2 + 'Z'),
       };
 
       if (attrSpec.t === AttrType.TIMESERIES) {
