@@ -1,5 +1,5 @@
 import React from 'react';
-import { Chart } from 'react-google-charts';
+import * as d3 from 'd3';
 
 import { PanelProps } from '@grafana/data';
 import { useTheme } from '@grafana/ui';
@@ -41,10 +41,8 @@ export function MultiValueTimelinePanel({
   const frame = data.series[0];
   const correctUsageMsg = "Are you fetching multi-value observations history from DP3?";
 
-  console.log(frame);
-
   // Expect 3 or 4 fields in total
-  if (frame.fields.length < 3 || frame.fields.length > 4) { 
+  if (frame.fields.length < 3 || frame.fields.length > 4) {
     return (
       <div className="panel-empty">
         <p>
@@ -61,8 +59,8 @@ export function MultiValueTimelinePanel({
   const dataField = frame.fields[2];
   const confidenceField = frame.fields[3];
 
-  // Expect frame fields `t`, `XXX` (and optionally `XXX#c`)
-  if (timeStartField.name !== 't1' || timeEndField.name !== 't2') { 
+  // Expect frame fields `t1`, `t2`, `XXX` (and optionally `XXX#c`)
+  if (timeStartField.name !== 't1' || timeEndField.name !== 't2') {
     return (
       <div className="panel-empty">
         <p>
@@ -88,37 +86,71 @@ export function MultiValueTimelinePanel({
     );
   }
 
-  const columns = [
-    { type: 'string', id: 'Data' },
-    { type: 'date', id: 'Start' },
-    { type: 'date', id: 'End' },
-  ];
-  let rows = [];
+  const distinctValues = [ ...new Set(dataField.values.toArray()) ].sort();
+  const maxLenghtOfValue = Math.max(0, ...distinctValues.map(v => v.toString().length));
 
+  // Convert values of all fields to objects
+  let values = [];
   for (let i = 0; i < dataField.values.length; i++) {
-    let v = dataField.values.get(i);
+    let v = {
+      t1: timeStartField.values.get(i),
+      t2: timeEndField.values.get(i),
+      v: dataField.values.get(i),
+      c: 1.0
+    };
 
-    rows.push([
-      typeof(v) === 'string' ? v : v.toString(),
-      new Date(timeStartField.values.get(i)),
-      new Date(timeEndField.values.get(i)),
-    ]);
+    if (confidenceField) {
+      v.c = confidenceField.values.get(i);
+    }
+
+    values.push(v);
   }
 
-  const chartData = [columns, ...rows];
-  const chartOptions = {
-    alternatingRowStyle: false,
-    backgroundColor: theme.colors.bg2,
-    fontName: '"Inter", "Helvetica", "Arial", sans-serif',
-  };
+  // Chart
+  const marginTop = 0;
+  const marginRight = 10;
+  const marginBottom = 20;
+  const marginLeft = 10 + 8 * maxLenghtOfValue;  // approximated
+
+  const chartWidth = width - marginLeft - marginRight;
+  const chartHeight = height - marginTop - marginBottom;
+
+  const xScale = d3.scaleTime(
+    [timeRange.from.valueOf(), timeRange.to.valueOf()],
+    [0, chartWidth]
+  );
+  const yScale = d3.scaleBand(distinctValues, [0, chartHeight]);
+
+  const xAxis = d3.axisBottom(xScale);
+  const yAxis = d3.axisLeft(yScale);
 
   return (
-    <Chart
-      chartType="Timeline"
-      data={chartData}
-      options={chartOptions}
-      width={width}
-      height={height}
-    />
+    <svg width={width} height={height}>
+      <g>
+        {values.map((v, i) => (
+          <rect
+            x={marginLeft + xScale(v.t1)}
+            y={marginTop + (yScale(v.v) || 0)}
+            width={xScale(v.t2) - xScale(v.t1) || 10}
+            height={yScale.bandwidth()}
+            fill={theme.palette.greenBase}
+            opacity={v.c}
+            key={i}
+          />
+        ))}
+      </g>
+      <g
+        transform={`translate(${marginLeft}, ${marginTop + chartHeight})`}
+        ref={(node) => {
+          d3.select(node).call(xAxis as any);
+        }}
+      />
+      <g
+        transform={`translate(${marginLeft}, ${marginTop})`}
+        ref={(node) => {
+          d3.select(node).call(yAxis as any);
+        }}
+      />
+    </svg>
   );
 }
