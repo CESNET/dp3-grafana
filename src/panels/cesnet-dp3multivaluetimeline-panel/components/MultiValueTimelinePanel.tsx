@@ -9,6 +9,7 @@ import { SimpleOptions } from '../types';
 interface Props extends PanelProps<SimpleOptions> {}
 
 export function MultiValueTimelinePanel({
+  id,
   options,
   data,
   width,
@@ -90,7 +91,7 @@ export function MultiValueTimelinePanel({
   const maxLenghtOfValue = Math.max(0, ...distinctValues.map(v => v.toString().length));
 
   // Convert values of all fields to objects
-  let values = [];
+  let values: Array<Record<string, any>> = [];
   for (let i = 0; i < dataField.values.length; i++) {
     let v = {
       t1: timeStartField.values.get(i),
@@ -124,6 +125,40 @@ export function MultiValueTimelinePanel({
   const xAxis = d3.axisBottom(xScale);
   const yAxis = d3.axisLeft(yScale);
 
+  // Tooltip
+  const tooltipId = `mvt-tooltip-${id}`;
+  const tooltipOnMouseOver = (e: any) => {
+    const i = e.target.attributes['data-value-index'].value;
+    const v = values[i];
+
+    const tooltipHtml = `<b>${v.v}</b>` +
+                        (confidenceField ? ` (${100*v.c} %)` : '') +
+                        '<br>' +
+                        new Date(v.t1).toLocaleString() +
+                        ' - ' +
+                        new Date(v.t2).toLocaleString();
+
+    // TODO: probably use one of Grafana's React components
+
+    d3.select(`#${tooltipId}`)
+      .style('opacity', 1)
+      .html(tooltipHtml);
+  };
+  const tooltipOnMouseMove = (e: any) => {
+    d3.select(`#${tooltipId}`)
+      .style('left', (e.pageX + 10) + 'px')
+      .style('top', (e.pageY + 10) + 'px')
+  };
+  const tooltipOnMouseOut = (e: any) => {
+    d3.select(`#${tooltipId}`)
+      .style('opacity', 0)
+  };
+
+  d3.select('body')
+    .append('div')
+    .attr('id', tooltipId)
+    .attr('style', 'position: absolute; z-index: 999; opacity: 0;');
+
   return (
     <svg width={width} height={height}>
       <g>
@@ -135,6 +170,10 @@ export function MultiValueTimelinePanel({
             height={yScale.bandwidth()}
             fill={theme.palette.greenBase}
             opacity={v.c}
+            onMouseOver={tooltipOnMouseOver}
+            onMouseMove={tooltipOnMouseMove}
+            onMouseOut={tooltipOnMouseOut}
+            data-value-index={i}
             key={i}
           />
         ))}
