@@ -1,29 +1,30 @@
-import { PanelPlugin, FieldColorModeId } from '@grafana/data';
+import { PanelPlugin, FieldConfigProperty, FieldColorModeId } from '@grafana/data';
 import { SimpleOptions } from './types';
 import { MultiValueTimelinePanel } from './components';
-import { ariaLabels } from './components/ariaLabels';
 
 export const plugin = new PanelPlugin<SimpleOptions>(MultiValueTimelinePanel)
   .useFieldConfig({
+    disableStandardOptions: [
+      FieldConfigProperty.Min,
+      FieldConfigProperty.Max,
+      FieldConfigProperty.Decimals,
+      FieldConfigProperty.DisplayName,
+      FieldConfigProperty.NoValue,
+      FieldConfigProperty.Thresholds,
+      FieldConfigProperty.Mappings,
+      FieldConfigProperty.Links,
+      FieldConfigProperty.Filterable,
+    ],
     standardOptions: {
-      color: {
+      [FieldConfigProperty.Color]: {
+        settings: {
+          byValueSupport: true,
+          bySeriesSupport: false,
+          preferThresholdsMode: false,
+        },
         defaultValue: {
-          mode: FieldColorModeId.ContinuousGrYlRd,
+          mode: FieldColorModeId.PaletteClassic,
         },
       },
     },
-    useCustomConfig: (builder) => {
-      builder
-        .addSliderInput({
-          path: 'fillOpacity',
-          name: 'Fill opacity',
-          defaultValue: 25,
-          settings: {
-            min: 0,
-            max: 100,
-            step: 1,
-            ariaLabelForHandle: ariaLabels.fillOpacity,
-          },
-        });
-    }
   });
