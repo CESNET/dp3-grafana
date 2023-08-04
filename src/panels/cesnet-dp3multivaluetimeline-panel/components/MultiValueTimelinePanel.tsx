@@ -2,7 +2,7 @@ import React from 'react';
 import * as d3 from 'd3';
 
 import { PanelProps } from '@grafana/data';
-import { useTheme } from '@grafana/ui';
+import { Tooltip, useTheme } from '@grafana/ui';
 
 import { SimpleOptions } from '../types';
 
@@ -93,18 +93,28 @@ export function MultiValueTimelinePanel({
   // Convert values of all fields to objects
   let values: Array<Record<string, any>> = [];
   for (let i = 0; i < dataField.values.length; i++) {
-    let v = {
-      t1: timeStartField.values.get(i),
-      t2: timeEndField.values.get(i),
-      v: dataField.values.get(i),
-      c: 1.0
-    };
+    const t1 = timeStartField.values.get(i);
+    const t2 = timeEndField.values.get(i);
+    const v = dataField.values.get(i);
+    const c = confidenceField ? confidenceField.values.get(i) : 1.0;
 
-    if (confidenceField) {
-      v.c = confidenceField.values.get(i);
-    }
+    const t1Str = new Date(t1).toLocaleString();
+    const t2Str = new Date(t2).toLocaleString();
 
-    values.push(v);
+    values.push({
+      t1,
+      t2,
+      v,
+      c,
+      tooltip: (
+        <span>
+          <b>{v}</b>
+          {confidenceField && ` (${100 * c} %)`}
+          <br />
+          {t1Str} - {t2Str}
+        </span>
+      )
+    });
   }
 
   // Chart
@@ -125,57 +135,20 @@ export function MultiValueTimelinePanel({
   const xAxis = d3.axisBottom(xScale);
   const yAxis = d3.axisLeft(yScale);
 
-  // Tooltip
-  const tooltipId = `mvt-tooltip-${id}`;
-  const tooltipOnMouseOver = (e: any) => {
-    const i = e.target.attributes['data-value-index'].value;
-    const v = values[i];
-
-    const tooltipHtml = `<b>${v.v}</b>` +
-                        (confidenceField ? ` (${100*v.c} %)` : '') +
-                        '<br>' +
-                        new Date(v.t1).toLocaleString() +
-                        ' - ' +
-                        new Date(v.t2).toLocaleString();
-
-    // TODO: probably use one of Grafana's React components
-
-    d3.select(`#${tooltipId}`)
-      .style('opacity', 1)
-      .html(tooltipHtml);
-  };
-  const tooltipOnMouseMove = (e: any) => {
-    d3.select(`#${tooltipId}`)
-      .style('left', (e.pageX + 10) + 'px')
-      .style('top', (e.pageY + 10) + 'px')
-  };
-  const tooltipOnMouseOut = (e: any) => {
-    d3.select(`#${tooltipId}`)
-      .style('opacity', 0)
-  };
-
-  d3.select('body')
-    .append('div')
-    .attr('id', tooltipId)
-    .attr('style', 'position: absolute; z-index: 999; opacity: 0;');
-
   return (
     <svg width={width} height={height}>
       <g>
         {values.map((v, i) => (
-          <rect
-            x={marginLeft + xScale(v.t1)}
-            y={marginTop + (yScale(v.v) || 0)}
-            width={xScale(v.t2) - xScale(v.t1) || 10}
-            height={yScale.bandwidth()}
-            fill={theme.palette.greenBase}
-            opacity={v.c}
-            onMouseOver={tooltipOnMouseOver}
-            onMouseMove={tooltipOnMouseMove}
-            onMouseOut={tooltipOnMouseOut}
-            data-value-index={i}
-            key={i}
-          />
+          <Tooltip content={v.tooltip} key={i}>
+            <rect
+              x={marginLeft + xScale(v.t1)}
+              y={marginTop + (yScale(v.v) || 0)}
+              width={xScale(v.t2) - xScale(v.t1) || 10}
+              height={yScale.bandwidth()}
+              fill={theme.palette.greenBase}
+              opacity={v.c}
+            />
+          </Tooltip>
         ))}
       </g>
       <g
