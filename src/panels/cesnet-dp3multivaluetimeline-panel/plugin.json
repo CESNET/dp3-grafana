@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/grafana/grafana/master/docs/sources/developers/plugins/plugin.schema.json",
   "type": "panel",
-  "name": "DP3 multivalue timeline",
+  "name": "DP³ multivalue timeline",
   "id": "cesnet-dp3multivaluetimeline-panel",
   "info": {
     "keywords": ["cesnet", "dp3", "panel"],

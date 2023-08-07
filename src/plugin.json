@@ -1,11 +1,11 @@
 {
   "$schema": "https://raw.githubusercontent.com/grafana/grafana/master/docs/sources/developers/plugins/plugin.schema.json",
   "type": "app",
-  "name": "DP3",
+  "name": "DP³",
   "id": "cesnet-dp3-app",
   "info": {
     "keywords": ["cesnet", "dp3", "app", "datasource", "panel"],
-    "description": "CESNET DP3 plugin for Grafana",
+    "description": "CESNET DP³ plugin for Grafana",
     "author": {
       "name": "CESNET",
       "url": "https://www.cesnet.cz"
@@ -15,7 +15,7 @@
       "large": "img/logo.svg"
     },
     "links": [
-      {"name": "DP3's GitHub", "url": "https://github.com/CESNET/dp3/"}
+      {"name": "DP³'s GitHub", "url": "https://github.com/CESNET/dp3/"}
     ],
     "screenshots": [],
     "version": "%VERSION%",

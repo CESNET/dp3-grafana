@@ -1,7 +1,7 @@
 {
   "name": "dp3-grafana",
   "version": "1.0.0",
-  "description": "CESNET DP3 plugin for Grafana",
+  "description": "CESNET DP³ plugin for Grafana",
   "scripts": {
     "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",
     "dev": "webpack -w -c ./.config/webpack/webpack.config.ts --env development",
