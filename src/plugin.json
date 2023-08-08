@@ -29,14 +29,6 @@
       "role": "Admin",
       "addToNav": true,
       "defaultNav": true
-    },
-    {
-      "type": "page",
-      "name": "Data source overview",
-      "path": "/a/%PLUGIN_ID%/ds-overview",
-      "role": "Admin",
-      "addToNav": false,
-      "defaultNav": false
     }
   ],
   "dependencies": {
