@@ -21,6 +21,24 @@
     "version": "%VERSION%",
     "updated": "%TODAY%"
   },
+  "includes": [
+    {
+      "type": "page",
+      "name": "Home page",
+      "path": "/a/%PLUGIN_ID%",
+      "role": "Admin",
+      "addToNav": true,
+      "defaultNav": true
+    },
+    {
+      "type": "page",
+      "name": "Data source overview",
+      "path": "/a/%PLUGIN_ID%/ds-overview",
+      "role": "Admin",
+      "addToNav": false,
+      "defaultNav": false
+    }
+  ],
   "dependencies": {
     "grafanaDependency": ">=9.5.3",
     "plugins": []
