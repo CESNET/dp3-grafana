@@ -2,7 +2,7 @@ import React, { ChangeEvent, useEffect, useState } from 'react';
 import { Checkbox, InlineField, Input, Select } from '@grafana/ui';
 import { QueryEditorProps, SelectableValue } from '@grafana/data';
 
-import { AttrType, DataSource } from '../datasource';
+import { DataSource } from '../datasource';
 import { MyDataSourceOptions, MyQuery } from '../types';
 
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>;
@@ -38,10 +38,10 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props) 
     const newAttributes = Object.keys(attrs).filter(key => {
       if (currentValues) {
         // Only plain and observations have current value
-        return attrs[key].t === AttrType.PLAIN || attrs[key].t === AttrType.OBSERVATION;
+        return DataSource.attrHasCurrentValue(attrs[key]);
       } else {
         // Only observations and timeseries have history
-        return attrs[key].t === AttrType.OBSERVATION || attrs[key].t === AttrType.TIMESERIES;
+        return DataSource.attrHasHistory(attrs[key]);
       }
     }).map(key => {
       return {

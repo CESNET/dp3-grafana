@@ -103,12 +103,27 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   }
 
   /**
+   * Checks whether attribute has current value
+   * @param attrSpec Attribute spec
+   */
+  static attrHasCurrentValue(attrSpec: Record<string, any>) {
+    return attrSpec.t === AttrType.PLAIN || attrSpec.t === AttrType.OBSERVATION;
+  }
+
+  /**
+   * Checks whether attribute has history
+   * @param attrSpec Attribute spec
+   */
+  static attrHasHistory(attrSpec: Record<string, any>) {
+    return attrSpec.t === AttrType.OBSERVATION || attrSpec.t === AttrType.TIMESERIES;
+  }
+
+  /**
    * Prepares single query field (column) for given query and attribute type
    * @param  frame    Frame to mutate
-   * @param  query    Query
    * @param  attrSpec Attribute spec
    */
-  private addQueryFieldToFrameByAttrType(frame: MutableDataFrame, query: MyQuery, attrSpec: Record<string, any>) {
+  private addQueryFieldToFrameByAttrType(frame: MutableDataFrame, attrSpec: Record<string, any>) {
     switch (attrSpec.t) {
     case AttrType.PLAIN:
       frame.addField({
@@ -189,9 +204,10 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     }
 
     const attr = query.attr || '';
+    const attrSpec = entitySpec.attribs[attr];
 
     // Populate fields
-    this.addQueryFieldToFrameByAttrType(frame, query, entitySpec.attribs[attr]);
+    this.addQueryFieldToFrameByAttrType(frame, attrSpec);
 
     if (query.eid) {
       // Get data for given eid
@@ -251,7 +267,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     const attrSpec = entitySpec.attribs[attr];
 
     // Populate fields
-    this.addQueryFieldToFrameByAttrType(frame, query, attrSpec);
+    this.addQueryFieldToFrameByAttrType(frame, attrSpec);
 
     // Eid must be populated
     // TODO: allow multiple EIDs
@@ -331,6 +347,48 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     };
 
     return { ...query, ...interpolated };
+  }
+
+  /**
+   * Gets all current values of entity attributes
+   * @param  entity     Entity
+   * @param  entitySpec Entity spec
+   * @return            Data frame
+   */
+  async entityOverviewQuery(entity: string, entitySpec: Record<string, any>): Promise<MutableDataFrame> {
+    const frame = new MutableDataFrame({
+      fields: []
+    });
+
+    // Add eid field
+    frame.addField({
+      name: 'eid',
+      type: FieldType.string,
+      config: { displayNameFromDS: 'EID' }
+    });
+
+    // Add fields for all attributes
+    for (const attr in entitySpec.attribs) {
+      const attrSpec = entitySpec.attribs[attr];
+
+      // Use only fields with current values
+      if (DataSource.attrHasCurrentValue(attrSpec)) {
+        this.addQueryFieldToFrameByAttrType(frame, attrSpec);
+      }
+    }
+
+    // Get data for all eids
+    const { data } = await this.doDatasourceRequest(
+      `/entity/${entity}`,
+      { limit: 9999 },
+    );
+
+    // Add data
+    for (const d of data.data) {
+      frame.add(d);
+    }
+
+    return frame;
   }
 
   /**
