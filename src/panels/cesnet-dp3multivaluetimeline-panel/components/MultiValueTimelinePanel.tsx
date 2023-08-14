@@ -93,13 +93,15 @@ export function MultiValueTimelinePanel({
   // Convert values of all fields to objects
   let values: Array<Record<string, any>> = [];
   for (let i = 0; i < dataField.values.length; i++) {
-    const t1 = timeStartField.values.get(i);
-    const t2 = timeEndField.values.get(i);
+    const t1Orig = timeStartField.values.get(i);
+    const t2Orig = timeEndField.values.get(i);
+    const t1 = Math.max(t1Orig, timeRange.from.valueOf());
+    const t2 = Math.min(t2Orig, timeRange.to.valueOf());
     const v = dataField.values.get(i);
     const c = confidenceField ? confidenceField.values.get(i) : 1.0;
 
-    const t1Str = new Date(t1).toLocaleString();
-    const t2Str = new Date(t2).toLocaleString();
+    const t1OrigStr = new Date(t1Orig).toLocaleString();
+    const t2OrigStr = new Date(t2Orig).toLocaleString();
 
     values.push({
       t1,
@@ -111,7 +113,7 @@ export function MultiValueTimelinePanel({
           <b>{v}</b>
           {confidenceField && ` (${100 * c} %)`}
           <br />
-          {t1Str} - {t2Str}
+          {t1OrigStr} - {t2OrigStr}
         </span>
       )
     });
