@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { applyFieldOverrides, DataFrame } from '@grafana/data';
-import { LoadingPlaceholder, Table, useTheme2 } from '@grafana/ui';
+import { Field, Input, LoadingPlaceholder, Table, useTheme2 } from '@grafana/ui';
 import { DataSource } from '../datasources/cesnet-dp3-datasource/datasource';
 
 interface EntityDataOverviewProps {
@@ -19,6 +19,7 @@ export function EntityDataOverview({
   const [width, setWidth] = useState(0);
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<DataFrame[]>([]);
+  const [eidFilter, setEidFilter] = useState<string>('');
 
   // Table width update handler
   const updateWidth = () => {
@@ -28,9 +29,14 @@ export function EntityDataOverview({
     }
   };
 
+  // EID filter update handler
+  const updateEidFilter = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEidFilter(e.target.value);
+  }
+
   // Wait for current entity data
   useEffect(() => {
-    ds.entityOverviewQuery(entity, entitySpec).then(d => {
+    ds.entityOverviewQuery(entity, entitySpec, eidFilter).then(d => {
       setData(applyFieldOverrides({
         data: [d],
         fieldConfig: {
@@ -42,20 +48,22 @@ export function EntityDataOverview({
       }));
       setLoading(false);
     });
-  }, [ds, entity, entitySpec, theme]);
+  }, [ds, entity, entitySpec, eidFilter, theme]);
 
   // Update width of table
   useEffect(updateWidth, [widthProbe]);
 
   return (
     <div ref={widthProbe}>
+      <Field label="EID filter" description="EIDs must contain this substring">
+        <Input onChange={updateEidFilter} />
+      </Field>
       {loading && <LoadingPlaceholder text="Loading..." />}
       {!loading && <Table
         width={width}
         height={400}
         data={data[0]}
         showTypeIcons={true}
-        enablePagination={true}
       />}
     </div>
   );

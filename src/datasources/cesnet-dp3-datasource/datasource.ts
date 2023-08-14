@@ -353,9 +353,10 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
    * Gets all current values of entity attributes
    * @param  entity     Entity
    * @param  entitySpec Entity spec
+   * @param  eidFilter  Return only EIDs containing this substring
    * @return            Data frame
    */
-  async entityOverviewQuery(entity: string, entitySpec: Record<string, any>): Promise<MutableDataFrame> {
+  async entityOverviewQuery(entity: string, entitySpec: Record<string, any>, eidFilter = ''): Promise<MutableDataFrame> {
     const frame = new MutableDataFrame({
       fields: []
     });
@@ -380,7 +381,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     // Get data for all eids
     const { data } = await this.doDatasourceRequest(
       `/entity/${entity}`,
-      { limit: 9999 },
+      { limit: 10, eid_filter: eidFilter },
     );
 
     // Add data
