@@ -123,7 +123,7 @@ export function MultiValueTimelinePanel({
   const marginTop = 0;
   const marginRight = 10;
   const marginBottom = 20;
-  const marginLeft = 10 + 8 * maxLenghtOfValue;  // approximated
+  const marginLeft = 30 + 5 * maxLenghtOfValue;  // approximated
 
   const chartWidth = width - marginLeft - marginRight;
   const chartHeight = height - marginTop - marginBottom;
