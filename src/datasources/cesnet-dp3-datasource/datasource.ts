@@ -120,10 +120,11 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
   /**
    * Prepares single query field (column) for given query and attribute type
-   * @param  frame    Frame to mutate
-   * @param  attrSpec Attribute spec
+   * @param  frame         Frame to mutate
+   * @param  attrSpec      Attribute spec
+   * @param  currentValues Whether querying current values
    */
-  private addQueryFieldToFrameByAttrType(frame: MutableDataFrame, attrSpec: Record<string, any>) {
+  private addQueryFieldToFrameByAttrType(frame: MutableDataFrame, attrSpec: Record<string, any>, currentValues: boolean) {
     switch (attrSpec.t) {
     case AttrType.PLAIN:
       frame.addField({
@@ -147,7 +148,8 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         }
       });
 
-      if (attrSpec.confidence) {
+      if (attrSpec.confidence && !currentValues) {
+        // Current values don't include confidence
         frame.addField({
           name: `${attrSpec.id}#c`,
           type: attrSpec.multi_value ? FieldType.other : FieldType.number,
@@ -207,7 +209,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     const attrSpec = entitySpec.attribs[attr];
 
     // Populate fields
-    this.addQueryFieldToFrameByAttrType(frame, attrSpec);
+    this.addQueryFieldToFrameByAttrType(frame, attrSpec, true);
 
     if (query.eid) {
       // Get data for given eid
@@ -267,7 +269,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     const attrSpec = entitySpec.attribs[attr];
 
     // Populate fields
-    this.addQueryFieldToFrameByAttrType(frame, attrSpec);
+    this.addQueryFieldToFrameByAttrType(frame, attrSpec, false);
 
     // Eid must be populated
     // TODO: allow multiple EIDs
@@ -374,7 +376,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
       // Use only fields with current values
       if (DataSource.attrHasCurrentValue(attrSpec)) {
-        this.addQueryFieldToFrameByAttrType(frame, attrSpec);
+        this.addQueryFieldToFrameByAttrType(frame, attrSpec, true);
       }
     }
 
