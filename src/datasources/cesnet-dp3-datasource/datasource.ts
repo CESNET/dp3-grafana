@@ -74,7 +74,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
    * @param  dataType Data type
    * @return          Grafana field type
    */
-  private getFIeldTypeFromDataType(dataType: string): FieldType {
+  private getFieldTypeFromDataType(dataType: string): FieldType {
     switch (dataType) {
     case 'tag': return FieldType.boolean;
     case 'binary': return FieldType.boolean;
@@ -129,7 +129,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     case AttrType.PLAIN:
       frame.addField({
         name: attrSpec.id,
-        type: this.getFIeldTypeFromDataType(attrSpec.data_type),
+        type: this.getFieldTypeFromDataType(attrSpec.data_type),
         config: {
           displayNameFromDS: attrSpec.name,
           description: attrSpec.description,
@@ -141,7 +141,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         name: attrSpec.id,
         type: attrSpec.multi_value
           ? FieldType.other
-          : this.getFIeldTypeFromDataType(attrSpec.data_type),
+          : this.getFieldTypeFromDataType(attrSpec.data_type),
         config: {
           displayNameFromDS: attrSpec.name,
           description: attrSpec.description,
@@ -170,7 +170,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       for (const s in attrSpec.series) {
         frame.addField({
           name: `${attrSpec.id}/${s}`,
-          type: this.getFIeldTypeFromDataType(attrSpec.series[s].data_type),
+          type: this.getFieldTypeFromDataType(attrSpec.series[s].data_type),
           config: {
             displayNameFromDS: `${attrSpec.name}/${s}`,
           }
