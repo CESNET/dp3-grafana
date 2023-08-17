@@ -87,13 +87,13 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     case 'mac': return FieldType.string;
     case 'time': return FieldType.time;
     case 'special': return FieldType.other;
-    case 'json': return FieldType.string;
+    case 'json': return FieldType.other;
     }
 
     const firstPart = dataType.split('<')[0];
 
     switch (firstPart) {
-    case 'link': return FieldType.string;
+    case 'link': return FieldType.other;
     case 'array': return FieldType.other;
     case 'set': return FieldType.other;
     case 'dict': return FieldType.other;
