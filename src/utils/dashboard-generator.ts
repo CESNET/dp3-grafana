@@ -1,11 +1,11 @@
 import { AttrType, DataSource } from '../datasources/cesnet-dp3-datasource/datasource';
 
 /**
- * Dashboard generator
+ * EID dashboard generator
  *
  * Generates dashboard based on entity specification.
  */
-export class DashboardGenerator {
+export class EIDDashboardGenerator {
   readonly NUMERIC_DATA_TYPES = ['int', 'int64', 'float'];
 
   private etype: string;
@@ -21,7 +21,7 @@ export class DashboardGenerator {
   constructor(etype: string, entitySpec: Record<string, any>, ds: DataSource, exampleEid = '') {
     this.etype = etype;
     this.entitySpec = entitySpec;
-    this.dsInfo = DashboardGenerator.generateDataSourceInfo(ds);
+    this.dsInfo = EIDDashboardGenerator.generateDataSourceInfo(ds);
     this.exampleEid = exampleEid;
   }
 
@@ -257,6 +257,72 @@ export class DashboardGenerator {
   generate(): string {
     let dhb = this.getDashboardBase();
     dhb.panels = this.generatePanels();
+
+    return JSON.stringify(dhb);
+  }
+};
+
+/**
+ * Full overview dashboard generator
+ *
+ * Generates dashboard based on entity specification.
+ */
+export class FullOverviewDashboardGenerator {
+  private etype: string;
+  private entitySpec: Record<string, any>;
+  private dsInfo: Record<string, any>;
+
+  /**
+   * Constructs new dashboard generator
+   * @param etype      Entity type
+   * @param entitySpec Entity specification
+   */
+  constructor(etype: string, entitySpec: Record<string, any>, ds: DataSource) {
+    this.etype = etype;
+    this.entitySpec = entitySpec;
+    this.dsInfo = EIDDashboardGenerator.generateDataSourceInfo(ds);
+  }
+
+  /**
+   * Generates JSON dashboard model
+   * @return JSON model
+   */
+  generate(): string {
+    let dhb = {
+      title: `${this.entitySpec.name} (${this.etype}) - full overview`,
+      editable: true,
+      time: {
+        from: 'now',
+        to: 'now'
+      },
+      timepicker: {
+        hidden: true
+      },
+      panels: [{
+        datasource: this.dsInfo,
+        title: `${this.entitySpec.name} (${this.etype}) - full overview`,
+        type: 'table',
+        gridPos: { h: 18, w: 24 },
+        targets: [{
+          refId: 'A',
+          datasource: this.dsInfo,
+          entity: this.etype,
+          currentValues: true,
+        }],
+        fieldConfig: {
+          defaults: {
+            custom: {
+              filterable: true,
+            },
+          },
+        },
+        options: {
+          footer: {
+            enablePagination: true
+          },
+        },
+      }]
+    };
 
     return JSON.stringify(dhb);
   }

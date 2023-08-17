@@ -306,6 +306,50 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   }
 
   /**
+   * Processes full data overview query
+   * @param  from       Timestamp from
+   * @param  to         Timestamp to
+   * @param  query      Query
+   * @param  entitySpec Entities specification
+   * @return            Data frames
+   */
+  private async processFullOverviewQuery(from: number, to: number, query: MyQuery, entitySpec: Record<string, any>): Promise<MutableDataFrame[]> {
+    const frame = new MutableDataFrame({
+      fields: []
+    });
+
+    // Add eid field
+    frame.addField({
+      name: 'eid',
+      type: FieldType.string,
+      config: { displayNameFromDS: 'EID' }
+    });
+
+    // Add fields for all attributes
+    for (const attr in entitySpec.attribs) {
+      const attrSpec = entitySpec.attribs[attr];
+
+      // Use only fields with current values
+      if (DataSource.attrHasCurrentValue(attrSpec)) {
+        this.addQueryFieldToFrameByAttrType(frame, attrSpec, true);
+      }
+    }
+
+    // Get data for all eids
+    const { data } = await this.doDatasourceRequest(
+      `/entity/${query.entity}`,
+      { limit: 9999 },
+    );
+
+    // Add data
+    for (const d of data.data) {
+      frame.add(d);
+    }
+
+    return [frame];
+  }
+
+  /**
    * Processes single query
    * @param  from         Timestamp from
    * @param  to           Timestamp to
@@ -315,6 +359,11 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
    */
   private async processSingleQuery(from: number, to: number, query: MyQuery, entitiesSpec: Record<string, any>): Promise<MutableDataFrame[]> {
     const entitySpec = entitiesSpec[query.entity || ''];
+
+    // Do special data overview query
+    if (query.entity && !query.attr && !query.eid && query.currentValues) {
+      return this.processFullOverviewQuery(from, to, query, entitySpec);
+    }
 
     // Entity must be present and valid
     if (!query.entity || !entitySpec) {
