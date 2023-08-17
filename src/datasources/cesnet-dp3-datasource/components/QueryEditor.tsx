@@ -8,10 +8,10 @@ import { MyDataSourceOptions, MyQuery } from '../types';
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>;
 
 export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props) {
-  const { currentValues, entity, eid, attr } = query;
+  const { currentValues, etype, eid, attr } = query;
 
   const [entitySpec, setEntitySpec] = useState<any>({});
-  const [entities, setEntities] = useState<Array<SelectableValue<string>>>([]);
+  const [etypes, setEtypes] = useState<Array<SelectableValue<string>>>([]);
   const [attributes, setAttributes] = useState<Array<SelectableValue<string>>>([]);
   const [attrState, setAttrState] = useState<string | null>(attr || null);
 
@@ -20,7 +20,7 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props) 
     datasource.getEntitySpec().then(resp => {
       setEntitySpec(resp);
 
-      setEntities(Object.keys(resp).map(key => {
+      setEtypes(Object.keys(resp).map(key => {
         const spec = resp[key];
         return {
           value: key,
@@ -33,7 +33,7 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props) 
 
   // Reflect entity's attributes
   useEffect(() => {
-    const attrs = entitySpec[entity || '']?.attribs || {};
+    const attrs = entitySpec[etype || '']?.attribs || {};
 
     const newAttributes = Object.keys(attrs).filter(key => {
       if (currentValues) {
@@ -58,7 +58,7 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props) 
         !newAttributes.some(a => a.value === attrState)) {
       setAttrState(null);
     }
-  }, [currentValues, entitySpec, entity]);  // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentValues, entitySpec, etype]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   // On change hooks
   const onCurrentValuesChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -66,9 +66,9 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props) 
     onRunQuery();
   };
 
-  const onEntityChange = (value: SelectableValue<string>) => {
+  const onEtypeChange = (value: SelectableValue<string>) => {
     delete query.attr;
-    onChange({ ...query, entity: value.value });
+    onChange({ ...query, etype: value.value });
     onRunQuery();
   };
 
@@ -94,13 +94,13 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props) 
       >
         <Checkbox value={currentValues} onChange={onCurrentValuesChange} />
       </InlineField>
-      <InlineField label="Entity" required>
+      <InlineField label="Entity type" required>
         <Select
-          options={entities}
-          value={entity}
-          onChange={onEntityChange}
-          isLoading={entities.length === 0}
-          disabled={entities.length === 0}
+          options={etypes}
+          value={etype}
+          onChange={onEtypeChange}
+          isLoading={etypes.length === 0}
+          disabled={etypes.length === 0}
         />
       </InlineField>
       <InlineField label="Attribute" required>
@@ -108,7 +108,7 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props) 
           options={attributes}
           value={attrState}
           onChange={onAttrChange}
-          isLoading={entities.length === 0}
+          isLoading={etypes.length === 0}
           disabled={attributes.length === 0}
         />
       </InlineField>

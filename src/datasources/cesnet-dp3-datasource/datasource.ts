@@ -214,7 +214,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     if (query.eid) {
       // Get data for given eid
       const { data } = await this.doDatasourceRequest(
-        `/entity/${query.entity}/${query.eid}/get/${attr}`,
+        `/entity/${query.etype}/${query.eid}/get/${attr}`,
         { date_from: to, date_to: to },
       );
 
@@ -227,7 +227,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     } else {
       // Get data for all eids
       const { data } = await this.doDatasourceRequest(
-        `/entity/${query.entity}`,
+        `/entity/${query.etype}`,
         { limit: 9999 },
       );
 
@@ -278,7 +278,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     }
 
     const { data } = await this.doDatasourceRequest(
-      `/entity/${query.entity}/${eid}/get/${attr}`,
+      `/entity/${query.etype}/${eid}/get/${attr}`,
       { date_from: from, date_to: to }
     );
 
@@ -337,7 +337,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
     // Get data for all eids
     const { data } = await this.doDatasourceRequest(
-      `/entity/${query.entity}`,
+      `/entity/${query.etype}`,
       { limit: 9999 },
     );
 
@@ -358,15 +358,15 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
    * @return              Data frames
    */
   private async processSingleQuery(from: number, to: number, query: MyQuery, entitiesSpec: Record<string, any>): Promise<MutableDataFrame[]> {
-    const entitySpec = entitiesSpec[query.entity || ''];
+    const entitySpec = entitiesSpec[query.etype || ''];
 
     // Do special data overview query
-    if (query.entity && !query.attr && !query.eid && query.currentValues) {
+    if (query.etype && !query.attr && !query.eid && query.currentValues) {
       return this.processFullOverviewQuery(from, to, query, entitySpec);
     }
 
     // Entity must be present and valid
-    if (!query.entity || !entitySpec) {
+    if (!query.etype || !entitySpec) {
       return [];
     }
 
@@ -392,7 +392,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     const templateSrv = getTemplateSrv();
 
     const interpolated = {
-      entity: templateSrv.replace(query.entity, vars),
+      etype: templateSrv.replace(query.etype, vars),
       attr: templateSrv.replace(query.attr, vars),
       eid: templateSrv.replace(query.eid, vars),
     };
@@ -402,12 +402,12 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
   /**
    * Gets all current values of entity attributes
-   * @param  entity     Entity
+   * @param  etype      Entity type
    * @param  entitySpec Entity spec
    * @param  eidFilter  Return only EIDs containing this substring
    * @return            Data frame
    */
-  async entityOverviewQuery(entity: string, entitySpec: Record<string, any>, eidFilter = ''): Promise<MutableDataFrame> {
+  async entityOverviewQuery(etype: string, entitySpec: Record<string, any>, eidFilter = ''): Promise<MutableDataFrame> {
     const frame = new MutableDataFrame({
       fields: []
     });
@@ -431,7 +431,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
     // Get data for all eids
     const { data } = await this.doDatasourceRequest(
-      `/entity/${entity}`,
+      `/entity/${etype}`,
       { limit: 10, eid_filter: eidFilter },
     );
 

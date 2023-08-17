@@ -84,7 +84,7 @@ export class EIDDashboardGenerator {
     return {
       refId: 'A',
       datasource: this.dsInfo,
-      entity: this.etype,
+      etype: this.etype,
       eid: '$eid',
       attr: attr,
     };
@@ -306,7 +306,7 @@ export class FullOverviewDashboardGenerator {
         targets: [{
           refId: 'A',
           datasource: this.dsInfo,
-          entity: this.etype,
+          etype: this.etype,
           currentValues: true,
         }],
         fieldConfig: {
