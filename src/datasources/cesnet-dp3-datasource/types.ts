@@ -1,7 +1,14 @@
 import { DataQuery, DataSourceJsonData } from '@grafana/data';
 
+export enum MyQueryType {
+  CurrentAttr = 'CURRENT_ATTR',
+  HistoryAttr = 'HISTORY_ATTR',
+  CurrentEtypeOverview = 'CURRENT_ETYPE_OVERVIEW',
+  CurrentAttrOverview = 'CURRENT_ATTR_OVERVIEW',
+}
+
 export interface MyQuery extends DataQuery {
-  currentValues?: boolean;
+  queryType?: MyQueryType;
   etype?: string;
   attr?: string;
   eid?: string;

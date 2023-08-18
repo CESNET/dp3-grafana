@@ -10,7 +10,7 @@ import {
 } from '@grafana/data';
 import { getBackendSrv, getTemplateSrv } from '@grafana/runtime';
 
-import { MyQuery, MyDataSourceOptions } from './types';
+import { MyQuery, MyQueryType, MyDataSourceOptions } from './types';
 
 /**
  * DP3 AttrType enum
@@ -183,27 +183,18 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   }
 
   /**
-   * Processes single current values query
+   * Processes single current attribute value query
    * @param  from       Timestamp from
    * @param  to         Timestamp to
    * @param  query      Query
    * @param  entitySpec Entity specification
    * @return            Data frames
    */
-  private async processCurrentValuesQuery(from: number, to: number, query: MyQuery, entitySpec: Record<string, any>): Promise<MutableDataFrame[]> {
+  private async processCurrentAttrValueQuery(from: number, to: number, query: MyQuery, entitySpec: Record<string, any>): Promise<MutableDataFrame[]> {
     const frame = new MutableDataFrame({
       refId: query.refId,
       fields: []
     });
-
-    // Add eid field if eid is not directly set
-    if (!query.eid) {
-      frame.addField({
-        name: 'eid',
-        type: FieldType.string,
-        config: { displayNameFromDS: 'EID' }
-      });
-    }
 
     const attr = query.attr || '';
     const attrSpec = entitySpec.attribs[attr];
@@ -211,29 +202,57 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     // Populate fields
     this.addQueryFieldToFrameByAttrType(frame, attrSpec, true);
 
-    if (query.eid) {
-      // Get data for given eid
-      const { data } = await this.doDatasourceRequest(
-        `/entity/${query.etype}/${query.eid}/get/${attr}`,
-        { date_from: to, date_to: to },
-      );
+    // Get data for given eid
+    const { data } = await this.doDatasourceRequest(
+      `/entity/${query.etype}/${query.eid}/get/${attr}`,
+      { date_from: to, date_to: to },
+    );
 
-      const currentValueObj: Record<string, any> = {};
-      currentValueObj[attr] = data.current_value;
+    const currentValueObj: Record<string, any> = {};
+    currentValueObj[attr] = data.current_value;
 
-      if (data.current_value) {
-        frame.add(currentValueObj);
-      }
-    } else {
-      // Get data for all eids
-      const { data } = await this.doDatasourceRequest(
-        `/entity/${query.etype}`,
-        { limit: 9999 },
-      );
+    if (data.current_value) {
+      frame.add(currentValueObj);
+    }
 
-      for (const d of data.data) {
-        frame.add(d);
-      }
+    return [frame];
+  }
+
+  /**
+   * Processes single current overview of attribute query
+   * @param  from       Timestamp from
+   * @param  to         Timestamp to
+   * @param  query      Query
+   * @param  entitySpec Entity specification
+   * @return            Data frames
+   */
+  private async processCurrentAttrOverviewQuery(from: number, to: number, query: MyQuery, entitySpec: Record<string, any>): Promise<MutableDataFrame[]> {
+    const frame = new MutableDataFrame({
+      refId: query.refId,
+      fields: []
+    });
+
+    // Add eid field
+    frame.addField({
+      name: 'eid',
+      type: FieldType.string,
+      config: { displayNameFromDS: 'EID' }
+    });
+
+    const attr = query.attr || '';
+    const attrSpec = entitySpec.attribs[attr];
+
+    // Populate fields
+    this.addQueryFieldToFrameByAttrType(frame, attrSpec, true);
+
+    // Get data for all eids
+    const { data } = await this.doDatasourceRequest(
+      `/entity/${query.etype}`,
+      { limit: 9999 },
+    );
+
+    for (const d of data.data) {
+      frame.add(d);
     }
 
     return [frame];
@@ -360,25 +379,26 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   private async processSingleQuery(from: number, to: number, query: MyQuery, entitiesSpec: Record<string, any>): Promise<MutableDataFrame[]> {
     const entitySpec = entitiesSpec[query.etype || ''];
 
-    // Do special data overview query
-    if (query.etype && !query.attr && !query.eid && query.currentValues) {
-      return this.processFullOverviewQuery(from, to, query, entitySpec);
-    }
-
     // Entity must be present and valid
     if (!query.etype || !entitySpec) {
       return [];
     }
 
-    // Attribute must be present and valid
-    if (!query.attr || !entitySpec.attribs[query.attr]) {
-      return [];
-    }
+    switch (query.queryType) {
+    case MyQueryType.CurrentAttr:
+      return this.processCurrentAttrValueQuery(from, to, query, entitySpec);
 
-    if (query.currentValues) {
-      return this.processCurrentValuesQuery(from, to, query, entitySpec);
-    } else {
+    case MyQueryType.HistoryAttr:
       return this.processHistoryQuery(from, to, query, entitySpec);
+
+    case MyQueryType.CurrentEtypeOverview:
+      return this.processFullOverviewQuery(from, to, query, entitySpec);
+
+    case MyQueryType.CurrentAttrOverview:
+      return this.processCurrentAttrOverviewQuery(from, to, query, entitySpec);
+
+    default:
+      return [];
     }
   }
 

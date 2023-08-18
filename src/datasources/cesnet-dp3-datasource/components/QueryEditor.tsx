@@ -1,14 +1,37 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
-import { Checkbox, InlineField, Input, Select } from '@grafana/ui';
+import { InlineField, Input, Select } from '@grafana/ui';
 import { QueryEditorProps, SelectableValue } from '@grafana/data';
 
 import { DataSource } from '../datasource';
-import { MyDataSourceOptions, MyQuery } from '../types';
+import { MyDataSourceOptions, MyQuery, MyQueryType } from '../types';
 
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>;
 
 export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props) {
-  const { currentValues, etype, eid, attr } = query;
+  const { queryType, etype, eid, attr } = query;
+
+  const queryTypes = [
+    {
+      value: MyQueryType.CurrentAttr,
+      label: 'Current value of attribute',
+      description: 'Gives current value of entity ID\'s attribute (only for plain and observations attribute types).'
+    },
+    {
+      value: MyQueryType.HistoryAttr,
+      label: 'History of attribute',
+      description: 'Gives history of entity ID\'s attribute (only for observations and timeseries attribute types).'
+    },
+    {
+      value: MyQueryType.CurrentEtypeOverview,
+      label: 'Current overview of entity type',
+      description: 'Gives current values for all attributes of given entity type.'
+    },
+    {
+      value: MyQueryType.CurrentAttrOverview,
+      label: 'Current overview of attribute',
+      description: 'Gives current value of attribute for each entity ID.'
+    },
+  ];
 
   const [entitySpec, setEntitySpec] = useState<any>({});
   const [etypes, setEtypes] = useState<Array<SelectableValue<string>>>([]);
@@ -36,12 +59,12 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props) 
     const attrs = entitySpec[etype || '']?.attribs || {};
 
     const newAttributes = Object.keys(attrs).filter(key => {
-      if (currentValues) {
-        // Only plain and observations have current value
-        return DataSource.attrHasCurrentValue(attrs[key]);
-      } else {
+      if (queryType === MyQueryType.HistoryAttr) {
         // Only observations and timeseries have history
         return DataSource.attrHasHistory(attrs[key]);
+      } else {
+        // Only plain and observations have current value
+        return DataSource.attrHasCurrentValue(attrs[key]);
       }
     }).map(key => {
       return {
@@ -58,11 +81,11 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props) 
         !newAttributes.some(a => a.value === attrState)) {
       setAttrState(null);
     }
-  }, [currentValues, entitySpec, etype]);  // eslint-disable-line react-hooks/exhaustive-deps
+  }, [queryType, entitySpec, etype]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   // On change hooks
-  const onCurrentValuesChange = (event: ChangeEvent<HTMLInputElement>) => {
-    onChange({ ...query, currentValues: event.target.checked });
+  const onQueryTypeChange = (value: SelectableValue<string>) => {
+    onChange({ ...query, queryType: value.value as MyQueryType });
     onRunQuery();
   };
 
@@ -84,37 +107,48 @@ export function QueryEditor({ datasource, query, onChange, onRunQuery }: Props) 
   };
 
   return (
-    <div className="gf-form gf-form-inline">
-      <InlineField
-        label="Current values"
-        tooltip="If checked, show only master record data or latest snapshot
-          (depends on other fields) - thus only plain and observation types
-          are allowed. If unchecked, shows historic data - only observations
-          and timeseries are allowed. This is handy for tabular overviews."
-      >
-        <Checkbox value={currentValues} onChange={onCurrentValuesChange} />
-      </InlineField>
-      <InlineField label="Entity type" required>
-        <Select
-          options={etypes}
-          value={etype}
-          onChange={onEtypeChange}
-          isLoading={etypes.length === 0}
-          disabled={etypes.length === 0}
-        />
-      </InlineField>
-      <InlineField label="Attribute" required>
-        <Select
-          options={attributes}
-          value={attrState}
-          onChange={onAttrChange}
-          isLoading={etypes.length === 0}
-          disabled={attributes.length === 0}
-        />
-      </InlineField>
-      <InlineField label="Entity ID">
-        <Input onChange={onEidChange} value={eid || ''} />
-      </InlineField>
+    <div>
+      <div className="gf-form gf-form-inline">
+        <InlineField label="Query type">
+          <Select
+            options={queryTypes}
+            value={queryType}
+            onChange={onQueryTypeChange}
+          />
+        </InlineField>
+      </div>
+      <div className="gf-form gf-form-inline">
+        <InlineField label="Entity type">
+          <Select
+            options={etypes}
+            value={etype}
+            onChange={onEtypeChange}
+            isLoading={etypes.length === 0}
+            disabled={etypes.length === 0}
+          />
+        </InlineField>
+
+        {(queryType === MyQueryType.CurrentAttr ||
+          queryType === MyQueryType.HistoryAttr ||
+          queryType === MyQueryType.CurrentAttrOverview) &&
+        <InlineField label="Attribute">
+          <Select
+            options={attributes}
+            value={attrState}
+            onChange={onAttrChange}
+            isLoading={etypes.length === 0}
+            disabled={attributes.length === 0}
+          />
+        </InlineField>
+        }
+
+        {(queryType === MyQueryType.CurrentAttr ||
+          queryType === MyQueryType.HistoryAttr) &&
+        <InlineField label="Entity ID">
+          <Input onChange={onEidChange} value={eid || ''} />
+        </InlineField>
+        }
+      </div>
     </div>
   );
 }
