@@ -15,7 +15,8 @@
       "large": "img/logo.svg"
     },
     "links": [
-      {"name": "DP³'s GitHub", "url": "https://github.com/CESNET/dp3/"}
+      {"name": "DP³'s GitHub", "url": "https://github.com/CESNET/dp3/"},
+      {"name": "Documentation", "url": "https://cesnet.github.io/dp3/"}
     ],
     "screenshots": [],
     "version": "%VERSION%",

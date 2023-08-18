@@ -1,50 +1,42 @@
-<!-- This README file is going to be the one displayed on the Grafana.com website for your plugin. Uncomment and replace the content here before publishing.
-
-Remove any remaining comments before publishing as these may be displayed on Grafana.com -->
 # DP³
 
-CESNET DP³ plugin for Grafana
+CESNET DP³ plugin for Grafana.
 
-<!-- To help maximize the impact of your README and improve usability for users, we propose the following loose structure:
+Provides simple and universal platform to access and visualize data from any DP³ instance.
 
-**BEFORE YOU BEGIN**
-- Ensure all links are absolute URLs so that they will work when the README is displayed within Grafana and Grafana.com
-- Be inspired ✨ 
-  - [grafana-polystat-panel](https://github.com/grafana/grafana-polystat-panel)
-  - [volkovlabs-variable-panel](https://github.com/volkovlabs/volkovlabs-variable-panel)
+Includes DP³ **data source** support, **panel** for displaying history of multi value attributes,
+as well as a **dashboard generator**.
 
-**ADD SOME BADGES**
+## Getting started
 
-Badges convey useful information at a glance for users whether in the Catalog or viewing the source code. You can use the generator on [Shields.io](https://shields.io/badges/dynamic-json-badge) together with the Grafana.com API 
-to create dynamic badges that update automatically when you publish a new version to the marketplace.
+### Installation
 
-- For the logo field use 'grafana'.
-- Examples (label: query)
-  - Downloads: $.downloads
-  - Catalog Version: $.version
-  - Grafana Dependency: $.grafanaDependency
-  - Signature Type: $.versionSignatureType
+This plugin can be installed from Grafana plugin catalog.
 
-Full example: ![Dynamic JSON Badge](https://img.shields.io/badge/dynamic/json?logo=grafana&query=$.version&url=https://grafana.com/api/plugins/grafana-polystat-panel&label=Marketplace&prefix=v&color=F47A20)
+To do so, navigate to `Menu > Administration > Plugins`, search for `DP³` and press `Install` button.
 
-Consider other [badges](https://shields.io/badges) as you feel appropriate for your project.
+### Adding data source
 
-## Overview / Introduction
-Provide one or more paragraphs as an introduction to your plugin to help users understand why they should use it.  
+After installation, add a new DP³ data source in `Data sources` page in your Grafana web interface.
+You will need a DP³ API URL thats accessible from user's browser.
 
-Consider including screenshots:
-- in [plugin.json](https://grafana.com/docs/grafana/latest/developers/plugins/metadata/#info) include them as relative links.
-- in the README ensure they are absolute URLs.
+### Dashboard generation
 
-## Requirements
-List any requirements or dependencies they may need to run the plugin.
+The plugin provides an overview page for all configured DP³ data sources and dashboard generation.
+It's located in `Menu > Apps > DP³`.
 
-## Getting Started
-Provide a quick start on how to configure and use the plugin.
+You can generate two types of dashboards for every entity type:
+- full overview: contains just one table with all current values of all attributes
+- EID: contains one or more panels for each attribute and
+  displays both current value and history of EID entered in the dashboard itself
+
+#### Modifying and extending generated dashboards
+
+These generated dashboards are meant primarily for reference and getting started,
+so when you get to know Grafana better, it's highly recommended to modify them or even better,
+to create a completely custom dashboard for your use-case.
+This way, you can even combine data from multiple data sources (including non-DP³) together.
 
 ## Documentation
-If your project has dedicated documentation available for users, provide links here. For help in following Grafana's style recommendations for technical documentation, refer to our [Writer's Toolkit](https://grafana.com/docs/writers-toolkit/).
 
-## Contributing
-Do you want folks to contribute to the plugin or provide feedback through specific means? If so, tell them how!
--->
+Documentation for whole DP³ project is available here: https://cesnet.github.io/dp3/
