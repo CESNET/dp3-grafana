@@ -1,4 +1,5 @@
 import { AttrType, DataSource } from '../datasources/cesnet-dp3-datasource/datasource';
+import { MyQueryType } from '../datasources/cesnet-dp3-datasource/types';
 
 /**
  * EID dashboard generator
@@ -97,7 +98,7 @@ export class EIDDashboardGenerator {
       gridPos: { h: 4, w: 12 },
       targets: [{
         ...this.getCommonTargetConfig(attr, attrSpec),
-        currentValues: true,
+        queryType: MyQueryType.CurrentAttr,
       }],
       options: {
         reduceOptions: {
@@ -116,7 +117,7 @@ export class EIDDashboardGenerator {
       gridPos: { h: 4, w: 12 },
       targets: [{
         ...this.getCommonTargetConfig(attr, attrSpec),
-        currentValues: true,
+        queryType: MyQueryType.CurrentAttr,
       }],
       options: {
         reduceOptions: {
@@ -147,7 +148,7 @@ export class EIDDashboardGenerator {
       gridPos: { h: 12, w: 12 },
       targets: [{
         ...this.getCommonTargetConfig(attr, attrSpec),
-        currentValues: false,
+        queryType: MyQueryType.HistoryAttr,
       }],
     };
   }
@@ -159,7 +160,7 @@ export class EIDDashboardGenerator {
       gridPos: { h: 12, w: 12 },
       targets: [{
         ...this.getCommonTargetConfig(attr, attrSpec),
-        currentValues: false,
+        queryType: MyQueryType.HistoryAttr,
       }],
       fieldConfig: {
         overrides: Object.keys(attrSpec.series).map(serie => {
@@ -305,9 +306,9 @@ export class FullOverviewDashboardGenerator {
         gridPos: { h: 18, w: 24 },
         targets: [{
           refId: 'A',
+          queryType: MyQueryType.CurrentEtypeOverview,
           datasource: this.dsInfo,
           etype: this.etype,
-          currentValues: true,
         }],
         fieldConfig: {
           defaults: {
