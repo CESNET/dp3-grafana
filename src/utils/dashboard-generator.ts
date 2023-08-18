@@ -1,3 +1,5 @@
+import { FieldType } from '@grafana/data';
+
 import { AttrType, DataSource } from '../datasources/cesnet-dp3-datasource/datasource';
 import { MyQueryType } from '../datasources/cesnet-dp3-datasource/types';
 
@@ -92,9 +94,13 @@ export class EIDDashboardGenerator {
   }
 
   private generatePanelForPlainAttr(attr: string, attrSpec: Record<string, any>): Record<string, any> {
+    const panelType = DataSource.getFieldTypeFromDataType(attrSpec.data_type) === FieldType.other
+      ? 'table'
+      : 'stat';
+
     return {
       ...this.getCommonPanelConfig(attr, attrSpec),
-      type: 'stat',
+      type: panelType,
       gridPos: { h: 4, w: 12 },
       targets: [{
         ...this.getCommonTargetConfig(attr, attrSpec),
@@ -106,14 +112,19 @@ export class EIDDashboardGenerator {
           fields: '/.*/',
           value: false
         },
+        showHeader: false,  // only needed for `table` type
       },
     };
   }
 
   private generatePanelForCurrentObsAttr(attr: string, attrSpec: Record<string, any>): Record<string, any> {
+    const panelType = DataSource.getFieldTypeFromDataType(attrSpec.data_type) === FieldType.other
+      ? 'table'
+      : 'stat';
+
     return {
       ...this.getCommonPanelConfig(attr, attrSpec),
-      type: 'stat',
+      type: panelType,
       gridPos: { h: 4, w: 12 },
       targets: [{
         ...this.getCommonTargetConfig(attr, attrSpec),
@@ -126,19 +137,19 @@ export class EIDDashboardGenerator {
           value: false
         },
         textMode: 'value',
+        showHeader: false,  // only needed for `table` type
       },
     };
   }
 
   private generatePanelForHistoryObsAttr(attr: string, attrSpec: Record<string, any>): Record<string, any> {
+    const fieldType = DataSource.getFieldTypeFromDataType(attrSpec.data_type);
+
     let panelType = 'table';
 
-    if (attrSpec.multi_value ||
-        attrSpec.data_type === 'tag' ||
-        attrSpec.data_type === 'binary' ||
-        attrSpec.data_type.match(/category.*/)) {
+    if (fieldType === FieldType.boolean || fieldType === FieldType.string) {
       panelType = 'cesnet-dp3multivaluetimeline-panel';
-    } else if (this.NUMERIC_DATA_TYPES.includes(attrSpec.data_type)) {
+    } else if (fieldType === FieldType.number) {
       panelType = 'timeseries';
     }
 
