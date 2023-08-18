@@ -191,20 +191,26 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
    * @return            Data frames
    */
   private async processCurrentAttrValueQuery(from: number, to: number, query: MyQuery, entitySpec: Record<string, any>): Promise<MutableDataFrame[]> {
+    const attr = query.attr || '';
+    const attrSpec = entitySpec.attribs[attr];
+    const eid = query.eid || '';
+
+    // Ensure valid attribute and EID
+    if (!attr || !attrSpec || !eid) {
+      return [];
+    }
+
     const frame = new MutableDataFrame({
       refId: query.refId,
       fields: []
     });
-
-    const attr = query.attr || '';
-    const attrSpec = entitySpec.attribs[attr];
 
     // Populate fields
     this.addQueryFieldToFrameByAttrType(frame, attrSpec, true);
 
     // Get data for given eid
     const { data } = await this.doDatasourceRequest(
-      `/entity/${query.etype}/${query.eid}/get/${attr}`,
+      `/entity/${query.etype}/${eid}/get/${attr}`,
       { date_from: to, date_to: to },
     );
 
@@ -227,20 +233,22 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
    * @return            Data frames
    */
   private async processCurrentAttrOverviewQuery(from: number, to: number, query: MyQuery, entitySpec: Record<string, any>): Promise<MutableDataFrame[]> {
-    const frame = new MutableDataFrame({
-      refId: query.refId,
-      fields: []
-    });
-
-    // Add eid field
-    frame.addField({
-      name: 'eid',
-      type: FieldType.string,
-      config: { displayNameFromDS: 'EID' }
-    });
-
     const attr = query.attr || '';
     const attrSpec = entitySpec.attribs[attr];
+
+    // Ensure valid attribute
+    if (!attr || !attrSpec) {
+      return [];
+    }
+
+    const frame = new MutableDataFrame({
+      refId: query.refId,
+      fields: [{
+        name: 'eid',
+        type: FieldType.string,
+        config: { displayNameFromDS: 'EID' }
+      }]
+    });
 
     // Populate fields
     this.addQueryFieldToFrameByAttrType(frame, attrSpec, true);
@@ -267,6 +275,21 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
    * @return            Data frames
    */
   private async processHistoryQuery(from: number, to: number, query: MyQuery, entitySpec: Record<string, any>): Promise<MutableDataFrame[]> {
+    const attr = query.attr || '';
+    const attrSpec = entitySpec.attribs[attr];
+    const eid = query.eid || '';
+
+    // Ensure valid attribute
+    if (!attr || !attrSpec) {
+      return [];
+    }
+
+    // Eid must be populated
+    // TODO: allow multiple EIDs
+    if (!eid) {
+      return [];
+    }
+
     const frame = new MutableDataFrame({
       refId: query.refId,
       fields: [
@@ -283,18 +306,8 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       ]
     });
 
-    const attr = query.attr || '';
-    const eid = query.eid || '';
-    const attrSpec = entitySpec.attribs[attr];
-
     // Populate fields
     this.addQueryFieldToFrameByAttrType(frame, attrSpec, false);
-
-    // Eid must be populated
-    // TODO: allow multiple EIDs
-    if (!eid) {
-      return [];
-    }
 
     const { data } = await this.doDatasourceRequest(
       `/entity/${query.etype}/${eid}/get/${attr}`,
@@ -334,14 +347,12 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
    */
   private async processFullOverviewQuery(from: number, to: number, query: MyQuery, entitySpec: Record<string, any>): Promise<MutableDataFrame[]> {
     const frame = new MutableDataFrame({
-      fields: []
-    });
-
-    // Add eid field
-    frame.addField({
-      name: 'eid',
-      type: FieldType.string,
-      config: { displayNameFromDS: 'EID' }
+      refId: query.refId,
+      fields: [{
+        name: 'eid',
+        type: FieldType.string,
+        config: { displayNameFromDS: 'EID' }
+      }]
     });
 
     // Add fields for all attributes
