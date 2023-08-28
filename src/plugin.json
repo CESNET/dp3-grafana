@@ -18,7 +18,9 @@
       {"name": "DP³'s GitHub", "url": "https://github.com/CESNET/dp3/"},
       {"name": "Documentation", "url": "https://cesnet.github.io/dp3/"}
     ],
-    "screenshots": [],
+    "screenshots": [
+      {"name": "Simple dashboard", "path": "img/simple_dashboard.png"}
+    ],
     "version": "0.1.0",
     "updated": "%TODAY%"
   },
