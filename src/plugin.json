@@ -32,6 +32,14 @@
       "role": "Admin",
       "addToNav": true,
       "defaultNav": true
+    },
+    {
+      "type": "datasource",
+      "name": "DP3 data source"
+    },
+    {
+      "type": "panel",
+      "name": "Multivalue timeline"
     }
   ],
   "dependencies": {
