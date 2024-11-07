@@ -21,7 +21,7 @@
     "screenshots": [
       {"name": "Simple dashboard", "path": "img/simple_dashboard.png"}
     ],
-    "version": "0.1.0",
+    "version": "0.1.1",
     "updated": "%TODAY%"
   },
   "includes": [
