@@ -35,11 +35,13 @@
     },
     {
       "type": "datasource",
-      "name": "DP3 data source"
+      "name": "DP3 data source",
+      "path": "datasources/cesnet-dp3-datasource/plugin.json"
     },
     {
       "type": "panel",
-      "name": "Multivalue timeline"
+      "name": "Multivalue timeline",
+      "path": "panels/cesnet-dp3multivaluetimeline-panel/plugin.json"
     }
   ],
   "dependencies": {
