@@ -463,7 +463,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     // Get data for all eids
     const { data } = await this.doDatasourceRequest(
       `/entity/${etype}`,
-      { limit: 10, eid_filter: eidFilter },
+      { limit: 10, fulltext_filters: JSON.stringify({ eid: eidFilter }) },
     );
 
     // Add data
