@@ -255,7 +255,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
     // Get data for all eids
     const { data } = await this.doDatasourceRequest(
-      `/entity/${query.etype}`,
+      `/entity/${query.etype}/get`,
       { limit: 9999 },
     );
 
@@ -367,7 +367,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
     // Get data for all eids
     const { data } = await this.doDatasourceRequest(
-      `/entity/${query.etype}`,
+      `/entity/${query.etype}/get`,
       { limit: 9999 },
     );
 
@@ -462,7 +462,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
     // Get data for all eids
     const { data } = await this.doDatasourceRequest(
-      `/entity/${etype}`,
+      `/entity/${etype}/get`,
       { limit: 10, fulltext_filters: JSON.stringify({ eid: eidFilter }) },
     );
 
